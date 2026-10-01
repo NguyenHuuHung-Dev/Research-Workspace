@@ -1,55 +1,94 @@
 # Research Workspace
 
-Ứng dụng nghiên cứu tài liệu với AI: tải tài liệu lên, chọn nguồn tham khảo và đặt câu hỏi để nhận câu trả lời có trích dẫn từ nội dung đã cung cấp.
+**Không gian nghiên cứu tài liệu với AI.** Tải tài liệu lên, chọn nguồn cần phân tích và đặt câu hỏi. Ứng dụng tổng hợp câu trả lời có cấu trúc, kèm trích đoạn bằng chứng từ chính tài liệu của bạn.
+
+![Giao diện Research Workspace với tài liệu đã tải lên và câu trả lời nghiên cứu](docs/images/research-workspace-demo.png)
 
 ## Tính năng
 
-- Hỗ trợ PDF, DOCX, TXT và Markdown; tối đa 20 MB mỗi tệp.
-- Trích xuất văn bản, chia đoạn và tìm nội dung liên quan đến câu hỏi.
-- Tạo câu trả lời bằng Gemini theo cấu trúc: tóm tắt, ý chính, bằng chứng, rủi ro và bước tiếp theo.
-- Hiển thị trích đoạn bằng chứng cùng tên tài liệu và số trang PDF khi có.
-- Lưu lịch sử nghiên cứu, tạo lại câu trả lời và sao chép kết quả.
-- Giao diện tương thích máy tính và thiết bị di động.
+- **Nghiên cứu theo tài liệu:** hỗ trợ PDF, DOCX, TXT và Markdown; chọn một hoặc nhiều tài liệu cho mỗi câu hỏi.
+- **Câu trả lời có bằng chứng:** Gemini tạo phần tóm tắt, ý chính, trích dẫn, rủi ro và bước tiếp theo. Trích dẫn được đối chiếu với văn bản đã trích xuất trước khi hiển thị.
+- **Lịch sử làm việc:** lưu câu hỏi và kết quả, xem lại nghiên cứu gần đây, tạo lại câu trả lời và sao chép nội dung.
+- **Giao diện thích ứng:** sử dụng trên máy tính và thiết bị di động.
+
+## Kiến trúc
+
+```mermaid
+flowchart LR
+    subgraph Browser[Trình duyệt]
+        UI[Next.js / React UI]
+        Local[IndexedDB<br/>Tệp gốc]
+        Auth[Firebase Auth<br/>Phiên ẩn danh]
+    end
+
+    subgraph Server[Next.js API routes]
+        Upload[Trích xuất và chia đoạn]
+        Research[Truy xuất đoạn liên quan]
+        Validate[Kiểm tra cấu trúc và trích dẫn]
+    end
+
+    DB[(Cloud Firestore<br/>Tài liệu, đoạn văn bản,<br/>lịch sử nghiên cứu)]
+    AI[Gemini API]
+
+    UI -->|Tải tài liệu| Local
+    UI -->|Tệp và ID token| Upload
+    Upload -->|Văn bản đã chia đoạn| DB
+    UI -->|Câu hỏi, tài liệu đã chọn và ID token| Research
+    Research <-->|Đọc tài liệu và lưu kết quả| DB
+    Research -->|Câu hỏi và đoạn liên quan| AI
+    AI -->|Câu trả lời dạng JSON| Validate
+    Validate -->|Kết quả qua luồng phản hồi| UI
+    Auth -.->|Xác thực yêu cầu| Upload
+    Auth -.->|Xác thực yêu cầu| Research
+```
+
+**Luồng tài liệu:** API route nhận tệp, trích xuất văn bản và chia thành các đoạn có thể tìm kiếm. Tệp gốc được lưu trong IndexedDB của trình duyệt tải lên; Firestore lưu thông tin tài liệu và các đoạn văn bản.
+
+**Luồng nghiên cứu:** API route lấy các đoạn liên quan từ những tài liệu đã chọn, gửi ngữ cảnh tới Gemini, kiểm tra câu trả lời theo schema và xác minh trích dẫn khớp với nguồn. Kết quả được truyền dần về giao diện và lưu vào Firestore cùng lịch sử câu hỏi.
+
+**Quyền truy cập:** Firebase Authentication cấp phiên ẩn danh. Firestore Security Rules giới hạn dữ liệu theo ID người dùng; Gemini API key chỉ được dùng trong API route phía máy chủ.
 
 ## Công nghệ
 
-Next.js (App Router), React, TypeScript, Tailwind CSS, Firebase Authentication, Cloud Firestore và Gemini API.
+| Thành phần | Công nghệ | Vai trò |
+| --- | --- | --- |
+| Giao diện và API | Next.js App Router, React, TypeScript | Giao diện, xử lý tải tệp và nghiên cứu |
+| Kiểu dáng | Tailwind CSS | Giao diện thích ứng |
+| Xác thực và dữ liệu | Firebase Authentication, Cloud Firestore | Phiên người dùng, tài liệu và lịch sử |
+| AI | Gemini API | Tổng hợp câu trả lời từ nội dung tài liệu |
+| Xử lý tài liệu | `pdf-parse`, `mammoth` | Trích xuất văn bản PDF và DOCX |
 
-## Chạy trên máy cá nhân
+## Bắt đầu
 
-**Yêu cầu:** Node.js 20 trở lên và pnpm 10.
+**Yêu cầu:** Node.js 20 trở lên, pnpm 10, dự án Firebase và Gemini API key.
 
-1. Tạo dự án Firebase, bật **Anonymous Authentication** và tạo cơ sở dữ liệu **Cloud Firestore**.
-2. Đăng ký ứng dụng Web trong Firebase để lấy cấu hình SDK. Tạo Gemini API key trong Google AI Studio.
-3. Sao chép `.env.example` thành `.env.local` và điền các biến môi trường:
+1. Trong Firebase, bật **Anonymous Authentication**, tạo **Cloud Firestore** và đăng ký một ứng dụng Web.
+2. Tạo tệp môi trường từ mẫu:
 
-   | Biến | Mô tả |
-   | --- | --- |
-   | `NEXT_PUBLIC_FIREBASE_API_KEY` | API key của ứng dụng Firebase Web |
-   | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Auth domain của dự án Firebase |
-   | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project ID |
-   | `NEXT_PUBLIC_FIREBASE_APP_ID` | App ID của ứng dụng Firebase Web |
-   | `FIREBASE_PROJECT_ID` | Project ID dùng bởi các API route phía máy chủ |
-   | `GEMINI_API_KEY` | Gemini API key, chỉ dùng phía máy chủ |
-   | `GEMINI_MODEL` | Mã model Gemini; xem giá trị mặc định trong `.env.example` |
+   ```bash
+   cp .env.example .env.local
+   ```
 
-4. Triển khai quy tắc truy cập trong `firestore.rules` bằng Firebase CLI:
+   Điền thông tin Firebase Web SDK vào các biến `NEXT_PUBLIC_FIREBASE_*`, điền project ID vào `FIREBASE_PROJECT_ID` và Gemini API key vào `GEMINI_API_KEY`. Có thể đổi `GEMINI_MODEL` nếu cần.
+
+3. Triển khai [Firestore Security Rules](firestore.rules):
 
    ```bash
    firebase deploy --only firestore:rules --project YOUR_PROJECT_ID
    ```
 
-5. Cài đặt và khởi chạy:
+4. Cài đặt và chạy ứng dụng:
 
    ```bash
    corepack pnpm install
    corepack pnpm dev
    ```
 
-Mở [http://localhost:3000](http://localhost:3000) để sử dụng. Có thể dùng `corepack pnpm build` và `corepack pnpm start` để chạy bản production.
+Mở [http://localhost:3000](http://localhost:3000). Để chạy bản production, dùng `corepack pnpm build` rồi `corepack pnpm start`.
 
-## Lưu trữ và giới hạn
+## Giới hạn hiện tại
 
-Firebase Authentication tạo phiên đăng nhập ẩn danh. Văn bản trích xuất, thông tin tài liệu và lịch sử nghiên cứu được lưu trong Firestore theo người dùng, với quyền truy cập được giới hạn bởi `firestore.rules`. Tệp gốc được giữ trong IndexedDB của trình duyệt đã tải lên; mở lại tệp gốc trên thiết bị khác sẽ không khả dụng.
-
-Ứng dụng cần môi trường chạy Next.js hỗ trợ API route phía máy chủ. PDF dạng ảnh chưa có OCR. Mỗi tài liệu được giới hạn 400 đoạn văn bản sau khi trích xuất.
+- Tối đa **20 MB** và **400 đoạn văn bản** cho mỗi tài liệu.
+- PDF dạng ảnh chưa hỗ trợ OCR.
+- Tệp gốc nằm trên trình duyệt tải lên, nên không thể mở tệp gốc từ thiết bị khác. Văn bản trích xuất và lịch sử nghiên cứu vẫn được lưu trong Firestore.
+- Cần môi trường chạy Next.js hỗ trợ API route phía máy chủ.
