@@ -86,6 +86,16 @@ flowchart LR
 
 Mở [http://localhost:3000](http://localhost:3000). Để chạy bản production, dùng `corepack pnpm build` rồi `corepack pnpm start`.
 
+## Triển khai với GitHub và Render
+
+Repository có [GitHub Actions CI](.github/workflows/ci.yml) để cài dependency, kiểm tra TypeScript và build trên mỗi push hoặc pull request vào `main`. [Render Blueprint](render.yaml) cấu hình một **Web Service miễn phí tại Singapore** và tự triển khai commit mới trên `main` sau khi CI thành công.
+
+1. Trong Render Dashboard, kết nối tài khoản GitHub và cấp quyền truy cập repository này. Tạo **New → Blueprint**, chọn repository và nhánh `main` để Render đọc `render.yaml`.
+2. Điền các biến `NEXT_PUBLIC_FIREBASE_*`, `FIREBASE_PROJECT_ID` và `GEMINI_API_KEY` khi Render yêu cầu. Dùng cùng giá trị với `.env.local` trên máy. **Không commit `.env.local` hoặc khóa Gemini lên GitHub.** Các biến `NEXT_PUBLIC_*` được nhúng vào bản build, nên cần đặt trước khi deploy.
+3. Sau khi Blueprint tạo dịch vụ và deploy xong, mở URL `https://<ten-dich-vu>.onrender.com` do Render cấp. Các lần push tiếp theo lên `main` sẽ chạy CI rồi kích hoạt deploy nếu mọi kiểm tra thành công.
+
+Render Free có thể tạm dừng dịch vụ khi không có truy cập; lượt mở đầu tiên sau thời gian chờ có thể tải chậm. Dữ liệu nghiên cứu nằm trong Firestore, còn tệp gốc vẫn nằm trong IndexedDB của trình duyệt người dùng.
+
 ## Giới hạn hiện tại
 
 - Tối đa **20 MB** và **400 đoạn văn bản** cho mỗi tài liệu.
