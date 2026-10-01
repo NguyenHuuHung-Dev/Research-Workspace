@@ -1,6 +1,31 @@
-# Research Workspace
+<div align="center">
+  <img src="public/favicon.svg" alt="Research Workspace" width="72" height="72" />
 
-**Không gian nghiên cứu tài liệu với AI.** Tải tài liệu lên, chọn nguồn cần phân tích và đặt câu hỏi. Ứng dụng tổng hợp câu trả lời có cấu trúc, kèm trích đoạn bằng chứng từ chính tài liệu của bạn.
+  <h1>Research Workspace</h1>
+
+  <strong>Không gian nghiên cứu tài liệu với AI, kèm bằng chứng từ nguồn của bạn.</strong>
+
+  <p>Tải tài liệu lên, chọn nguồn cần phân tích và đặt câu hỏi. Ứng dụng tổng hợp câu trả lời có cấu trúc, kèm trích đoạn có thể kiểm tra từ chính tài liệu đã chọn.</p>
+
+  <p>
+    <a href="#tính-năng">Tính năng</a> ·
+    <a href="#kiến-trúc">Kiến trúc</a> ·
+    <a href="#công-nghệ">Công nghệ</a> ·
+    <a href="#bắt-đầu">Bắt đầu</a>
+  </p>
+
+  <p>
+    <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-black?logo=nextdotjs" />
+    <img alt="React 19" src="https://img.shields.io/badge/React-19-149ECA?logo=react&logoColor=white" />
+    <img alt="TypeScript 5" src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" />
+    <img alt="Tailwind CSS 4" src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" />
+    <img alt="Firebase 12" src="https://img.shields.io/badge/Firebase-12-DD2C00?logo=firebase&logoColor=white" />
+    <img alt="Gemini API" src="https://img.shields.io/badge/Gemini-API-8E75B2?logo=googlegemini&logoColor=white" />
+    <img alt="pnpm 10" src="https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white" />
+  </p>
+</div>
+
+---
 
 ![Giao diện Research Workspace với tài liệu đã tải lên và câu trả lời nghiên cứu](docs/images/research-workspace-demo.png)
 
@@ -52,11 +77,12 @@ flowchart LR
 
 | Thành phần | Công nghệ | Vai trò |
 | --- | --- | --- |
-| Giao diện và API | Next.js App Router, React, TypeScript | Giao diện, xử lý tải tệp và nghiên cứu |
-| Kiểu dáng | Tailwind CSS | Giao diện thích ứng |
-| Xác thực và dữ liệu | Firebase Authentication, Cloud Firestore | Phiên người dùng, tài liệu và lịch sử |
-| AI | Gemini API | Tổng hợp câu trả lời từ nội dung tài liệu |
+| Giao diện và API | Next.js 15 (App Router), React 19, TypeScript 5 | Giao diện, xử lý tải tệp và nghiên cứu |
+| Kiểu dáng | Tailwind CSS 4 | Giao diện thích ứng |
+| Xác thực và dữ liệu | Firebase SDK 12, Firebase Authentication, Cloud Firestore | Phiên người dùng, tài liệu và lịch sử |
+| AI | Gemini API (`@google/genai`) | Tổng hợp câu trả lời từ nội dung tài liệu |
 | Xử lý tài liệu | `pdf-parse`, `mammoth` | Trích xuất văn bản PDF và DOCX |
+| Quản lý gói | pnpm 10 | Cài đặt dependency và chạy script |
 
 ## Bắt đầu
 
