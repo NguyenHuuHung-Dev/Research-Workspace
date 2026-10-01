@@ -1,0 +1,25 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    match /users/{uid} {
+      allow read, create, update: if owner(uid);
+      match /documents/{documentId} {
+        allow read: if owner(uid);
+        allow create, update: if owner(uid) && request.resource.data.userId == uid
+          && request.resource.data.size <= 20971520;
+        allow delete: if owner(uid);
+        match /chunks/{chunkId} {
+          allow read, delete: if owner(uid);
+          allow create, update: if owner(uid)
+            && request.resource.data.text is string
+            && request.resource.data.text.size() <= 1500;
+        }
+      }
+      match /conversations/{conversationId} {
+        allow read, write: if owner(uid);
+        match /messages/{messageId} { allow read, write: if owner(uid); }
+      }
+    }
+  }
+}
